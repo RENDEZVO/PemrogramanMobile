@@ -1,33 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:travelogue_app/models/Destination_models.dart';
+import 'package:travelogue_app/providers/app_providers.dart';
 
-class DestinationCard extends StatelessWidget {
+class DestinationCard extends ConsumerWidget {
   final Destination destination;
 
   const DestinationCard({super.key, required this.destination});
 
   @override
-  Widget build(BuildContext context) {
-    // 1. Dibungkus dengan InkWell agar bisa di-tap
-    return InkWell(
-      // 2. Properti onTap untuk aksi saat disentuh
-      onTap: () {
-  // 1. Membuat widget SnackBar
-  final snackBar = SnackBar(
-    content: Text('Anda memilih ${destination.name}'), // Teks yang akan ditampilkan
-    backgroundColor: Colors.blueAccent, // Ganti warna latar belakang (opsional)
-    action: SnackBarAction(
-      label: 'Tutup', // Teks untuk tombol aksi (opsional)
-      textColor: Colors.white,
-      onPressed: () {
-        // Kode ini akan dijalankan jika tombol "Tutup" ditekan
-      },
-    ),
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Membaca daftar favorit dari provider
+    final favoriteDestinations = ref.watch(favoriteDestinationsProvider);
+    final isFavorite = favoriteDestinations.contains(destination);
 
-  // 2. Menampilkan SnackBar menggunakan ScaffoldMessenger
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-},
+    return InkWell(
+      onTap: () {
+        // Aksi SnackBar saat kartu ditekan
+        final snackBar = SnackBar(content: Text('Anda memilih ${destination.name}'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      },
       borderRadius: BorderRadius.circular(20),
       child: Container(
         margin: const EdgeInsets.only(left: 16),
@@ -35,6 +27,7 @@ class DestinationCard extends StatelessWidget {
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
+            // Kode gambar dan teks tidak berubah
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Image.asset(
@@ -44,6 +37,7 @@ class DestinationCard extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
+            // ... (Kode Container gradien dan Positioned untuk teks tetap sama)
             Container(
               height: 100,
               width: 220,
@@ -55,10 +49,7 @@ class DestinationCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.8),
-                    Colors.transparent,
-                  ],
+                  colors: [Colors.black.withOpacity(0.8), Colors.transparent],
                 ),
               ),
             ),
@@ -83,10 +74,7 @@ class DestinationCard extends StatelessWidget {
                       const SizedBox(width: 5),
                       Text(
                         destination.location,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
+                        style: const TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ],
                   ),
@@ -113,7 +101,28 @@ class DestinationCard extends StatelessWidget {
                   ],
                 ),
               ),
-            )
+            ),
+
+            // ===================================================
+            // BAGIAN INI YANG MENAMPILKAN IKON HATI
+            // ===================================================
+            Positioned(
+              top: 2,
+              left: 2,
+              child: IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: Colors.redAccent,
+                  size: 30,
+                ),
+                onPressed: () {
+                  ref
+                      .read(favoriteDestinationsProvider.notifier)
+                      .toggleFavorite(destination);
+                },
+              ),
+            ),
+            // ===================================================
           ],
         ),
       ),

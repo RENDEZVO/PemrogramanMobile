@@ -1,39 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:travelogue_app/models/Destination_models.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // 1. Pastikan Riverpod di-import
+import 'package:travelogue_app/providers/app_providers.dart'; // 2. Import file provider Anda
+import 'package:travelogue_app/widgets/Category_Selector.dart'; // Koreksi typo jika perlu
 import 'package:travelogue_app/widgets/Destination_card.dart';
-import 'package:travelogue_app/widgets/Cattegory_Selector.dart';
 
+// 3. Ubah dari StatelessWidget menjadi ConsumerWidget
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key});
 
-class HomeScreen extends StatelessWidget {
-  final List<Destination> destinations = [
-    Destination(
-      imageUrl: 'assets/images/nusa_penida.jpg',
-      name: 'Nusa Penida',
-      location: 'Bali, Indonesia',
-      rating: 4.8,
-    ),
-    Destination(
-      imageUrl: 'assets/images/bromo.jpg',
-      name: 'Gunung Bromo',
-      location: 'Jawa Timur, Indonesia',
-      rating: 4.9,
-    ),
-    Destination(
-      imageUrl: 'assets/images/borobudur.jpg',
-      name: 'Candi Borobudur',
-      location: 'Jawa Tengah, Indonesia',
-      rating: 4.7,
-    ),
-  ];
+  // 4. Hapus daftar destinasi dari sini, karena sudah dipindahkan ke provider
+  // final List<Destination> destinations = [ ... ]; // <-- HAPUS BAGIAN INI
 
   @override
-  Widget build(BuildContext context) {
+  // 5. Tambahkan 'WidgetRef ref' pada method build
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 6. Ambil (watch) data dari provider
+      final destinations = ref.watch(filteredDestinationsProvider);
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Discover',
           style: TextStyle(
             color: Colors.black,
@@ -41,9 +30,9 @@ class HomeScreen extends StatelessWidget {
             fontSize: 28,
           ),
         ),
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
               backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=3'),
             ),
@@ -51,7 +40,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: ListView(
-        padding: EdgeInsets.symmetric(vertical: 20.0),
+        padding: const EdgeInsets.symmetric(vertical: 20.0),
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -63,11 +52,11 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 20),
-          CategorySelector(),
-          SizedBox(height: 30),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          const SizedBox(height: 20),
+          CategorySelector(), // Widget ini juga akan kita ubah nanti
+          const SizedBox(height: 30),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
               "Popular Destinations",
               style: TextStyle(
@@ -76,11 +65,12 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 20),
-          Container(
+          const SizedBox(height: 20),
+          SizedBox(
             height: 300,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
+              // 7. Gunakan 'destinations' yang sudah diambil dari provider
               itemCount: destinations.length,
               itemBuilder: (BuildContext context, int index) {
                 return DestinationCard(destination: destinations[index]);
