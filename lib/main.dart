@@ -3,6 +3,7 @@ import 'package:travelogue_app/screens/home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:travelogue_app/providers/app_providers.dart';
+import 'package:travelogue_app/screens/login_screen.dart';
 
 void main() {
   runApp(
@@ -35,7 +36,7 @@ class MyApp extends ConsumerWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

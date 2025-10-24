@@ -4,7 +4,9 @@ import 'package:travelogue_app/providers/app_providers.dart';
 import 'package:travelogue_app/widgets/Category_Selector.dart';
 import 'package:travelogue_app/widgets/Destination_card.dart';
 import 'package:travelogue_app/widgets/user_profile_dialog.dart';
-import 'package:travelogue_app/screens/favorite_screen.dart'; // Import halaman favorit
+import 'package:travelogue_app/screens/favorite_screen.dart';
+import 'package:travelogue_app/screens/search_screen.dart';
+import 'package:travelogue_app/screens/login_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -20,13 +22,40 @@ class HomeScreen extends ConsumerWidget {
         elevation: 0,
         title: Text('Discover', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 28)),
         actions: [
+
+          //  Tombol login
+
+        IconButton(
+            icon: Icon(Icons.login, color: Theme.of(context).colorScheme.primary),
+            tooltip: 'Login',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+          ),
+
+        //  Tombol Search Baru
+          IconButton(
+            icon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
+            tooltip: 'Cari',
+            onPressed: () {
+              // Navigasi ke SearchScreen menggunakan MaterialPageRoute
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SearchScreen()),
+              );
+            },
+          ),
+         
           // === TOMBOL FAVORIT DITAMBAHKAN DI SINI ===
           IconButton(
             icon: Icon(
-              Icons.favorite_border, // Ikon hati kosong
+              Icons.favorite_border, 
               color: Theme.of(context).colorScheme.primary,
             ),
-            tooltip: 'Favorit',
+            tooltip: 'Favorit', 
             onPressed: () {
               Navigator.push(
                 context,
@@ -34,9 +63,7 @@ class HomeScreen extends ConsumerWidget {
               );
             },
           ),
-          // === AKHIR TOMBOL FAVORIT ===
 
-         
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: GestureDetector(
