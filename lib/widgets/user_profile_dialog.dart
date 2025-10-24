@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:travelogue_app/providers/app_providers.dart'; // <-- Pastikan baris ini ada
+import 'package:travelogue_app/providers/app_providers.dart';
 
 class UserProfileDialog extends ConsumerStatefulWidget {
   const UserProfileDialog({super.key});
@@ -16,6 +16,7 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
   @override
   void initState() {
     super.initState();
+    // Read the initial theme from the provider
     final currentThemeMode = ref.read(themeModeProvider);
     _selectedTheme = currentThemeMode == ThemeMode.dark ? 'Dark' : 'Light';
   }
@@ -23,22 +24,21 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const AlertDialog(
-        content: SizedBox(
-          height: 120,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Menyimpan...'),
-              ],
-            ),
-          ),
+    return const AlertDialog( // Harus tetap AlertDialog
+      backgroundColor: Colors.transparent, // Buat background transparan (opsional)
+      elevation: 0, // Hilangkan bayangan (opsional)
+      content: Center( // Pusatkan konten loading
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Ukuran pas konten
+          children: [
+            CircularProgressIndicator(), // Indikator putar
+            SizedBox(height: 16),
+            Text('Menyimpan...'), // Teks loading
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
     return AlertDialog(
       title: const Text('Profil & Preferensi'),
@@ -75,11 +75,16 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
         FilledButton(
           onPressed: () {
             setState(() => _isLoading = true);
-            
-            Future.delayed(const Duration(seconds: 2), () {
-              final newTheme = _selectedTheme == 'Dark' ? ThemeMode.dark : ThemeMode.light;
-              ref.read(themeModeProvider.notifier).state = newTheme;
-              
+
+            // Make the callback async
+            Future.delayed(const Duration(seconds: 1), () async {
+              final newThemeMode = _selectedTheme == 'Dark' ? ThemeMode.dark : ThemeMode.light;
+
+              // === CHANGE IS HERE ===
+              // Call the setThemeMode method from the ThemeNotifier
+              await ref.read(themeModeProvider.notifier).setThemeMode(newThemeMode);
+              // You no longer need the .state = ... or saveThemeToPreferences lines
+
               if (mounted) {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(

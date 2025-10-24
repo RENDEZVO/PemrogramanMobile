@@ -1,9 +1,11 @@
+// lib/models/Destination_models.dart
+
 class Destination {
   final String imageUrl;
   final String name;
   final String location;
   final double rating;
-  final String category; 
+  final String category;
 
   Destination({
     required this.imageUrl,
@@ -12,14 +14,29 @@ class Destination {
     required this.rating,
     required this.category,
   });
+}
 
-  factory Destination.fromJson(Map<String, dynamic> json) {
+// ===== EXTENSION UNTUK DATABASE (HARUS ADA DI SINI) =====
+// Menambahkan method toMap dan fromDbMap
+
+extension DestinationDbExtension on Destination {
+  // Method untuk mengubah objek Destination MENJADI Map
+  Map<String, dynamic> toMap() => {
+        'name': name,
+        'location': location,
+        'imageUrl': imageUrl,
+        'rating': rating,
+        'category': category,
+      };
+
+  // Method static untuk membuat objek Destination DARI Map
+  static Destination fromDbMap(Map<String, dynamic> map) {
     return Destination(
-      name: json['name'] ?? 'No Name',
-      location: json['location'] ?? 'No Location',
-      imageUrl: json['image_Url'] ?? '',
-      rating: (json['rating'] ?? 00).toDouble(),
-      category: json['category'] ?? 'Misc',
+      name: map['name'] as String,
+      location: map['location'] as String,
+      imageUrl: map['imageUrl'] as String,
+      rating: map['rating'] as double,
+      category: map['category'] as String,
     );
-  } 
+  }
 }
