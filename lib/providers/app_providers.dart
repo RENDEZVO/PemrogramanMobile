@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:travelogue_app/models/Destination_models.dart';
 
-// ===== 1. Provider untuk Daftar Destinasi LENGKAP =====
+// ===== 1. Provider Kembali ke Data Hardcode =====
 final destinationListProvider = Provider<List<Destination>>((ref) {
   return [
     Destination(
@@ -35,30 +36,26 @@ final destinationListProvider = Provider<List<Destination>>((ref) {
   ];
 });
 
-// ===== Provider BARU untuk Daftar Destinasi yang SUDAH DIFILTER =====
-// Ini adalah bagian yang ditambahkan
+// ===== 2. Provider Kategori (Tidak Berubah) =====
+final selectedCategoryProvider = StateProvider<String>((ref) {
+  return 'Beach';
+});
+
+// ===== 3. Provider Filter (Kembali ke Versi Simpel) =====
 final filteredDestinationsProvider = Provider<List<Destination>>((ref) {
-  // Provider ini "mendengarkan" dua provider lain:
   final selectedCategory = ref.watch(selectedCategoryProvider);
+  // Langsung ambil data dari provider hardcode
   final allDestinations = ref.watch(destinationListProvider);
 
-  // Kemudian, ia mengembalikan daftar baru berdasarkan filter
+  // Filter seperti biasa
   return allDestinations
       .where((destination) => destination.category == selectedCategory)
       .toList();
 });
 
-
-// ===== 2. Provider untuk Kategori yang Dipilih =====
-final selectedCategoryProvider = StateProvider<String>((ref) {
-  return 'Beach'; // Nilai awal
-});
-
-
-// ===== 3. Provider untuk Destinasi Favorit =====
+// ===== 4. Provider Favorit (Tidak Berubah) =====
 class FavoriteDestinationsNotifier extends StateNotifier<List<Destination>> {
   FavoriteDestinationsNotifier() : super([]);
-
   void toggleFavorite(Destination destination) {
     if (state.contains(destination)) {
       state = state.where((d) => d.name != destination.name).toList();
@@ -67,8 +64,12 @@ class FavoriteDestinationsNotifier extends StateNotifier<List<Destination>> {
     }
   }
 }
-
 final favoriteDestinationsProvider =
     StateNotifierProvider<FavoriteDestinationsNotifier, List<Destination>>((ref) {
   return FavoriteDestinationsNotifier();
+});
+
+// ===== 5. Provider Tema (Tidak Berubah) =====
+final themeModeProvider = StateProvider<ThemeMode>((ref) {
+  return ThemeMode.light;
 });

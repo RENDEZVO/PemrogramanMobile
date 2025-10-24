@@ -36,7 +36,6 @@ dependencies:
   flutter_riverpod: ^2.5.1
   cupertino_icons: ^1.0.8
   google_fonts: ^4.0.4 # Anda bisa gunakan versi terbaru
- 
 
 dev_dependencies:
   flutter_test:

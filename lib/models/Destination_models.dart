@@ -12,4 +12,14 @@ class Destination {
     required this.rating,
     required this.category,
   });
+
+  factory Destination.fromJson(Map<String, dynamic> json) {
+    return Destination(
+      name: json['name'] ?? 'No Name',
+      location: json['location'] ?? 'No Location',
+      imageUrl: json['image_Url'] ?? '',
+      rating: (json['rating'] ?? 00).toDouble(),
+      category: json['category'] ?? 'Misc',
+    );
+  } 
 }
