@@ -29,7 +29,7 @@ Styling Dinamis: Implementasi tema terang dan gelap (ThemeData/darkTheme) yang d
 
 Cara Menjalankan Proyek ⚙️
 Pastikan Anda sudah menginstall Flutter, Android Studio/VS Code, dan memiliki Android Emulator atau perangkat fisik.
-git clone https://www.fda.gov/drugs/types-applications/abbreviated-new-drug-application-anda
+jalankan ini di terminal : git clone https://www.fda.gov/drugs/types-applications/abbreviated-new-drug-application-anda
 cd travelogue_app
 
 Install Dependencies:
