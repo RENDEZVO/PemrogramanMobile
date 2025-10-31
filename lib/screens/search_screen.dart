@@ -11,62 +11,59 @@ class SearchScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Pantau query pencarian
     final searchQuery = ref.watch(searchQueryProvider);
-    // Pantau data destinasi dari provider utama (yang hardcode)
-    final allDestinations = ref.watch(destinationListProvider);
-
-    // Filter data berdasarkan query
-    final List<Destination> results = searchQuery.isEmpty
-        ? allDestinations 
-        : allDestinations
-            .where((dest) =>
-                dest.name.toLowerCase().contains(searchQuery.toLowerCase()))
-            .toList();
+    final destinationsAsync = ref.watch(destinationListProvider);
 
     return Scaffold(
       appBar: AppBar(
-        // TextField untuk input
         title: TextField(
-          autofocus: true, // Langsung aktif saat halaman dibuka
+          autofocus: true,
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
-            hintText: 'Cari nama destinasi...',
+            hintText: 'Cari berdasarkan nama...',
             hintStyle: TextStyle(color: Colors.grey[600]),
-            border: InputBorder.none, // Hapus garis bawah
+            border: InputBorder.none,
             prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
           ),
           onChanged: (value) {
-            // Update state pencarian saat user mengetik
             ref.read(searchQueryProvider.notifier).state = value;
           },
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
-      body: results.isEmpty
-          // Tampilkan pesan jika hasil kosong
-          ? Center(
-              child: Text(
-                searchQuery.isEmpty
-                    ? 'Mulai ketik untuk mencari.'
-                    : 'Destinasi "$searchQuery" tidak ditemukan.',
-                 style: const TextStyle(fontSize: 16, color: Colors.grey),
-                 textAlign: TextAlign.center,
-              ),
-            )
-          // Tampilkan hasil (bisa ListView atau GridView)
-          : ListView.builder( // Kita pakai ListView dulu
-              padding: const EdgeInsets.all(16.0),
-              itemCount: results.length,
-              itemBuilder: (context, index) {
-                // Tampilkan kartu di dalam daftar
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: DestinationCard(destination: results[index]),
-                );
-              },
+      
+      body: destinationsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error memuat data: $err')),
+        data: (allDestinations) {
+          
+          final List<Destination> results = searchQuery.isEmpty
+              ? allDestinations
+              : allDestinations
+                  .where((dest) =>
+                      dest.name.toLowerCase().contains(searchQuery.toLowerCase()))
+                  .toList();
+
+          if (results.isEmpty) {
+            return Center(child: Text(searchQuery.isEmpty ? 'Mulai ketik untuk mencari.' : 'Tidak ditemukan.', style: const TextStyle(fontSize: 16, color: Colors.grey)));
+          }
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(16.0),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 10.0,
+              childAspectRatio: 0.75,
             ),
+            itemCount: results.length,
+            itemBuilder: (context, index) {
+              return DestinationCard(destination: results[index]);
+            },
+          );
+        },
+      ),
     );
   }
 }

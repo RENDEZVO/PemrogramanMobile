@@ -1,121 +1,91 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'package:travelogue_app/helpers/database_helper.dart';
 import 'package:travelogue_app/models/Destination_models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// ===== 1. Provider Kembali ke Data Hardcode (Tidak Berubah) =====
-final destinationListProvider = Provider<List<Destination>>((ref) {
-  return [
-    Destination(
-      imageUrl: 'assets/images/nusa_penida.jpg',
-      name: 'Nusa Penida',
-      location: 'Bali, Indonesia',
-      rating: 4.8,
-      category: 'Beach',
-    ),
-    Destination(
-      imageUrl: 'assets/images/bromo.jpg',
-      name: 'Gunung Bromo',
-      location: 'Jawa Timur, Indonesia',
-      rating: 4.9,
-      category: 'Mountain',
-    ),
-    Destination(
-      imageUrl: 'assets/images/borobudur.jpg',
-      name: 'Candi Borobudur',
-      location: 'Jawa Tengah, Indonesia',
-      rating: 4.7,
-      category: 'Culture',
-    ),
-    Destination(
-      imageUrl: 'assets/images/jakarta.jpeg',
-      name: 'Kota Jakarta',
-      location: 'DKI Jakarta, Indonesia',
-      rating: 4.6,
-      category: 'City',
-    ),
-  ];
+// URL API REST Countries
+const String _apiUrl = 'https://restcountries.com/v3.1/all?fields=name,capital,flags,region';
+
+// Provider ASLI yang mengambil data dari API (FutureProvider)
+final destinationListProvider = FutureProvider<List<Destination>>((ref) async {
+  final response = await http.get(Uri.parse(_apiUrl));
+  if (response.statusCode == 200) {
+    final List<dynamic> jsonList = jsonDecode(response.body);
+    return jsonList.map((json) => Destination.fromJson(json)).toList();
+  } else {
+    throw Exception('Gagal memuat data negara');
+  }
 });
 
-// ===== 2. Provider Kategori (Tidak Berubah) =====
+// Provider Kategori Pilihan
 final selectedCategoryProvider = StateProvider<String>((ref) {
-  return 'Beach';
+  return 'Asia'; // Default
 });
 
-// ===== 3. Provider Filter (Tidak Berubah) =====
-final filteredDestinationsProvider = Provider<List<Destination>>((ref) {
+// Provider Filter (sekarang memfilter berdasarkan benua/region)
+final filteredDestinationsProvider = Provider<AsyncValue<List<Destination>>>((ref) {
   final selectedCategory = ref.watch(selectedCategoryProvider);
-  final allDestinations = ref.watch(destinationListProvider);
+  final destinationsAsync = ref.watch(destinationListProvider);
 
-  return allDestinations
-      .where((destination) => destination.category == selectedCategory)
-      .toList();
-});
+  return destinationsAsync.whenData((destinations) {
+    
+    // === TAMBAHKAN DEBUG PRINT DI SINI ===
+    // Ini akan mencetak ke DEBUG CONSOLE Anda saat filter berjalan
+    print('--- MENJALANKAN FILTER ---');
+    print('Kategori Dipilih: $selectedCategory');
+    // Ambil 5 contoh kategori pertama dari data API
+    var categoriesFromApi = destinations.map((d) => d.category).toSet().take(5);
+    print('Contoh Kategori dari API: $categoriesFromApi');
+    // =====================================
 
-// ===== Provider untuk Destinasi Favorit (dengan sqflite) =====
-final favoriteDestinationsProvider =
-    StateNotifierProvider<FavoriteDestinationsNotifier, List<Destination>>((ref) {
-  return FavoriteDestinationsNotifier(); // Langsung return, inisialisasi di constructor
+    // Filter Case-Insensitive (logika ini sudah benar)
+    final lowerCaseSelectedCategory = selectedCategory.toLowerCase();
+    return destinations
+        .where((d) => d.category.toLowerCase() == lowerCaseSelectedCategory)
+        .toList();
+  });
 });
 
 class FavoriteDestinationsNotifier extends StateNotifier<List<Destination>> {
-  FavoriteDestinationsNotifier() : super([]) { // Nilai awal kosong sementara
-    _loadFavorites(); // Panggil fungsi load saat dibuat
-  }
-
-  // Fungsi untuk load data dari DB
+  FavoriteDestinationsNotifier() : super([]) { _loadFavorites(); }
   Future<void> _loadFavorites() async {
     final favorites = await DatabaseHelper.instance.getFavorites();
-    state = favorites; // Update state dengan data dari DB
+    state = favorites;
   }
-
-  // Fungsi untuk toggle favorit (menambah/menghapus)
   Future<void> toggleFavorite(Destination destination) async {
-    // Cek state saat ini
     final isCurrentlyFavorite = state.any((d) => d.name == destination.name);
-
     if (isCurrentlyFavorite) {
-      // Hapus dari DB
       await DatabaseHelper.instance.removeFavorite(destination.name);
-      // Update state
       state = state.where((d) => d.name != destination.name).toList();
     } else {
-      // Tambah ke DB
       await DatabaseHelper.instance.addFavorite(destination);
-      // Update state
       state = [...state, destination];
     }
   }
 }
-
-// ===== 5. Provider Tema (Diubah untuk SharedPreferences) =====
-final themeModeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  return ThemeNotifier();
+final favoriteDestinationsProvider =
+    StateNotifierProvider<FavoriteDestinationsNotifier, List<Destination>>((ref) {
+  return FavoriteDestinationsNotifier();
 });
 
+// Provider Tema (SharedPreferences)
 class ThemeNotifier extends StateNotifier<ThemeMode> {
   late SharedPreferences _prefs;
   static const _themeKey = 'themeMode';
-
-  ThemeNotifier() : super(ThemeMode.light) { // Default initial state
-    _init(); // Call initialization
-  }
-
-  // Initialize and load the saved theme preference
+  ThemeNotifier() : super(ThemeMode.light) { _init(); }
   Future<void> _init() async {
     _prefs = await SharedPreferences.getInstance();
     final themeString = _prefs.getString(_themeKey);
-    if (themeString == 'dark') {
-      state = ThemeMode.dark;
-    } else {
-      state = ThemeMode.light; // Default to light if nothing is saved or it's 'light'
-    }
+    state = themeString == 'dark' ? ThemeMode.dark : ThemeMode.light;
   }
-
-  // Change the theme and save the preference
   Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
     await _prefs.setString(_themeKey, mode == ThemeMode.dark ? 'dark' : 'light');
   }
 }
+final themeModeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
+  return ThemeNotifier();
+});

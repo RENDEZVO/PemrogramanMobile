@@ -8,38 +8,30 @@ class FavoriteScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 1. Langsung pantau provider. Hasilnya adalah List<Destination>.
     final favoriteDestinations = ref.watch(favoriteDestinationsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Destinasi Favorit'),
-        backgroundColor: Colors.transparent, 
-        elevation: 0,
-        foregroundColor: Theme.of(context).brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black,
+        // ... (styling AppBar)
       ),
+      // 2. Tidak perlu .when(), langsung cek isEmpty
       body: favoriteDestinations.isEmpty
-          // Jika tidak ada favorit, tampilkan pesan
           ? const Center(
-              child: Text(
-                'Belum ada destinasi favorit.',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
+              child: Text('Belum ada destinasi favorit.'),
             )
-          // Jika ada favorit, tampilkan dalam ListView
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 8.0),
+          : GridView.builder(
+              padding: const EdgeInsets.all(16.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0,
+                childAspectRatio: 0.75,
+              ),
               itemCount: favoriteDestinations.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                
-                  child: DestinationCard(
-                    destination: favoriteDestinations[index],
-                  
-                  ),
-                );
+                return DestinationCard(destination: favoriteDestinations[index]);
               },
             ),
     );

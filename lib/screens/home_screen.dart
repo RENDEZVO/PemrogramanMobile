@@ -13,57 +13,19 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final filteredDestinations = ref.watch(filteredDestinationsProvider);
+    final filteredDestinationsValue = ref.watch(filteredDestinationsProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
+        // ... (Kode AppBar tidak berubah)
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Discover', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 28)),
         actions: [
-
-          //  Tombol login
-
-        IconButton(
-            icon: Icon(Icons.login, color: Theme.of(context).colorScheme.primary),
-            tooltip: 'Login',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
-          ),
-
-        //  Tombol Search Baru
-          IconButton(
-            icon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
-            tooltip: 'Cari',
-            onPressed: () {
-              // Navigasi ke SearchScreen menggunakan MaterialPageRoute
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SearchScreen()),
-              );
-            },
-          ),
-         
-          // === TOMBOL FAVORIT DITAMBAHKAN DI SINI ===
-          IconButton(
-            icon: Icon(
-              Icons.favorite_border, 
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            tooltip: 'Favorit', 
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const FavoriteScreen()),
-              );
-            },
-          ),
-
+          IconButton(icon: Icon(Icons.login, color: Theme.of(context).colorScheme.primary), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()))),
+          IconButton(icon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchScreen()))),
+          IconButton(icon: Icon(Icons.favorite_border, color: Theme.of(context).colorScheme.primary), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoriteScreen()))),
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: GestureDetector(
@@ -88,22 +50,36 @@ class HomeScreen extends ConsumerWidget {
             child: Text("Popular Destinations", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
           ),
           const SizedBox(height: 20),
-          if (filteredDestinations.isEmpty)
-            const SizedBox(
-              height: 300,
-              child: Center(child: Text('Tidak ada destinasi untuk kategori ini.'))
-            )
-          else
-            SizedBox(
-              height: 300,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: filteredDestinations.length,
-                itemBuilder: (context, index) {
-                  return DestinationCard(destination: filteredDestinations[index]);
-                },
-              ),
-            ),
+
+          // Tampilkan data API dengan .when()
+          filteredDestinationsValue.when(
+            data: (destinations) {
+              if (destinations.isEmpty) {
+                return const SizedBox(
+                  height: 300,
+                  child: Center(child: Text('Tidak ada destinasi untuk kategori ini.')));
+              }
+              return SizedBox(
+                height: 300,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: destinations.length,
+                  itemBuilder: (context, index) {
+                    // === PERBAIKAN UTAMA DI SINI ===
+                    // Bungkus kartu dengan Container yang punya lebar dan margin
+                    return Container(
+                      width: 220, // Beri lebar tetap
+                      margin: const EdgeInsets.only(left: 16), // Beri margin
+                      child: DestinationCard(destination: destinations[index]),
+                    );
+                    // === AKHIR PERBAIKAN ===
+                  },
+                ),
+              );
+            },
+            loading: () => const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
+            error: (error, stack) => SizedBox(height: 300, child: Center(child: Text('Gagal memuat data: ${error.toString()}'))),
+          ),
         ],
       ),
     );

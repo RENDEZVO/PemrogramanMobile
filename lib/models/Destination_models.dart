@@ -5,7 +5,7 @@ class Destination {
   final String name;
   final String location;
   final double rating;
-  final String category;
+  final String category; 
 
   Destination({
     required this.imageUrl,
@@ -14,13 +14,26 @@ class Destination {
     required this.rating,
     required this.category,
   });
+
+  // Factory constructor untuk membaca JSON dari REST Countries API
+  factory Destination.fromJson(Map<String, dynamic> json) {
+    final List<dynamic>? capitalList = json['capital'] as List<dynamic>?;
+    
+    return Destination(
+      name: json['name']?['common'] ?? 'Unknown Country',
+      
+      location: (capitalList != null && capitalList.isNotEmpty) 
+          ? capitalList.first as String 
+          : 'No Capital',
+      
+      imageUrl: json['flags']?['png'] ?? '', 
+      rating: 4.5,
+      category: json['region'] ?? 'Misc',
+    );
+  }
 }
 
-// ===== EXTENSION UNTUK DATABASE (HARUS ADA DI SINI) =====
-// Menambahkan method toMap dan fromDbMap
-
 extension DestinationDbExtension on Destination {
-  // Method untuk mengubah objek Destination MENJADI Map
   Map<String, dynamic> toMap() => {
         'name': name,
         'location': location,
@@ -29,7 +42,6 @@ extension DestinationDbExtension on Destination {
         'category': category,
       };
 
-  // Method static untuk membuat objek Destination DARI Map
   static Destination fromDbMap(Map<String, dynamic> map) {
     return Destination(
       name: map['name'] as String,

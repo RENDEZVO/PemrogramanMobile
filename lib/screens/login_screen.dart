@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:travelogue_app/screens/home_screen.dart'; // <-- 1. Import HomeScreen
+import 'package:travelogue_app/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,23 +21,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submitForm() {
-    // Jalankan validasi
     if (_formKey.currentState!.validate()) {
-      // Jika valid:
-
-      // 1. Tampilkan SnackBar (opsional, tapi bagus untuk feedback)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Login Berhasil! Mengalihkan...'),
           backgroundColor: Colors.green,
-          duration: const Duration(milliseconds: 1000), // Durasi lebih singkat
+          duration: const Duration(milliseconds: 1000),
         ),
       );
-
-      // 2. Tunggu sebentar, lalu pindah ke HomeScreen
       Future.delayed(const Duration(milliseconds: 1200), () {
-        if (mounted) { // Pastikan widget masih ada
-          // Gunakan pushReplacement agar tidak bisa kembali ke Login
+        if (mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -45,7 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       });
     } else {
-      // Jika tidak valid: Tampilkan SnackBar error (tidak berubah)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Harap perbaiki error pada form.'),
@@ -87,19 +79,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Email',
                     hintText: 'contoh@email.com',
                     prefixIcon: Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Email tidak boleh kosong';
-                    }
+                    if (value == null || value.isEmpty) return 'Email tidak boleh kosong';
                     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                    if (!emailRegex.hasMatch(value)) {
-                      return 'Masukkan format email yang valid';
-                    }
+                    if (!emailRegex.hasMatch(value)) return 'Masukkan format email yang valid';
                     return null;
                   },
                 ),
@@ -110,18 +96,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Password',
                     hintText: 'Minimal 6 karakter',
                     prefixIcon: Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   ),
                   obscureText: true,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Password tidak boleh kosong';
-                    }
-                    if (value.length < 6) {
-                      return 'Password minimal 6 karakter';
-                    }
+                    if (value == null || value.isEmpty) return 'Password tidak boleh kosong';
+                    if (value.length < 6) return 'Password minimal 6 karakter';
                     return null;
                   },
                 ),
@@ -130,9 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _submitForm,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
