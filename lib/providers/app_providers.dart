@@ -6,10 +6,10 @@ import 'package:travelogue_app/helpers/database_helper.dart';
 import 'package:travelogue_app/models/Destination_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// URL API REST Countries
+
 const String _apiUrl = 'https://restcountries.com/v3.1/all?fields=name,capital,flags,region';
 
-// Provider ASLI yang mengambil data dari API (FutureProvider)
+
 final destinationListProvider = FutureProvider<List<Destination>>((ref) async {
   final response = await http.get(Uri.parse(_apiUrl));
   if (response.statusCode == 200) {
@@ -22,7 +22,7 @@ final destinationListProvider = FutureProvider<List<Destination>>((ref) async {
 
 // Provider Kategori Pilihan
 final selectedCategoryProvider = StateProvider<String>((ref) {
-  return 'Asia'; // Default
+  return 'Asia'; 
 });
 
 // Provider Filter (sekarang memfilter berdasarkan benua/region)

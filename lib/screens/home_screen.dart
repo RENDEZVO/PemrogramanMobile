@@ -18,7 +18,6 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        // ... (Kode AppBar tidak berubah)
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Discover', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 28)),
@@ -65,14 +64,13 @@ class HomeScreen extends ConsumerWidget {
                   scrollDirection: Axis.horizontal,
                   itemCount: destinations.length,
                   itemBuilder: (context, index) {
-                    // === PERBAIKAN UTAMA DI SINI ===
-                    // Bungkus kartu dengan Container yang punya lebar dan margin
+                    
                     return Container(
                       width: 220, // Beri lebar tetap
                       margin: const EdgeInsets.only(left: 16), // Beri margin
                       child: DestinationCard(destination: destinations[index]),
                     );
-                    // === AKHIR PERBAIKAN ===
+            
                   },
                 ),
               );
