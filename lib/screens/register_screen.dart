@@ -1,60 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:travelogue_app/screens/home_screen.dart';
-import 'package:travelogue_app/screens/register_screen.dart'; // PENTING: Import halaman Register
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  // Controller untuk mengambil teks dari inputan
+class _RegisterScreenState extends State<RegisterScreen> {
+  // Controller
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
-  // Kunci form untuk validasi
+
   final _formKey = GlobalKey<FormState>();
-  
-  // Status loading biar tombol muter-muter pas diklik
   bool _isLoading = false;
 
-  // --- FUNGSI LOGIN SAKTI (FIREBASE) ---
-  Future<void> _login() async {
+  Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
-      _isLoading = true; // Munculin loading
+      _isLoading = true;
     });
 
     try {
-      // INI DIA LOGIKA FIREBASE-NYA!
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      // 1. Buat User Baru di Firebase Auth
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Kalau berhasil (tidak error), pindah ke Home
+      // 2. Update Nama Profil (Display Name) agar tidak null
+      if (userCredential.user != null) {
+        await userCredential.user!.updateDisplayName(_nameController.text.trim());
+      }
+
+      // 3. Jika sukses, langsung masuk ke Home
       if (mounted) {
-        Navigator.pushReplacement(
+        // Hapus semua history route agar tidak bisa back ke login
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
         );
       }
     } on FirebaseAuthException catch (e) {
-      // Kalau Gagal
-      String message = "Login Gagal";
-      if (e.code == 'user-not-found') {
-        message = "Email tidak ditemukan.";
-      } else if (e.code == 'wrong-password') {
-        message = "Password salah, bos!";
+      String message = "Registrasi Gagal";
+      if (e.code == 'weak-password') {
+        message = "Password terlalu lemah (min. 6 karakter).";
+      } else if (e.code == 'email-already-in-use') {
+        message = "Email sudah terdaftar. Silakan Login.";
       } else {
-        message = "Error: ${e.message}";
+        message = e.message ?? "Terjadi kesalahan.";
       }
 
-      // Tampilkan pesan error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message), backgroundColor: Colors.red),
@@ -63,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false; // Matikan loading
+          _isLoading = false;
         });
       }
     }
@@ -71,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -83,9 +85,11 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // Tombol back dihapus jika ini halaman pertama, tapi dibiarkan jika perlu
-        automaticallyImplyLeading: false, 
-        title: const Text("Login Travelogue", style: TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text("Daftar Akun", style: TextStyle(color: Colors.white)),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -96,15 +100,40 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  "Selamat Datang!",
+                  "Bergabung Bersama Kami!",
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.purpleAccent,
                   ),
                 ),
-                const SizedBox(height: 40),
-                
+                const SizedBox(height: 30),
+
+                // INPUT NAMA
+                TextFormField(
+                  controller: _nameController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.person_outline, color: Colors.grey),
+                    labelText: "Nama Lengkap",
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.purpleAccent),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return "Nama wajib diisi";
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
                 // INPUT EMAIL
                 TextFormField(
                   controller: _emailController,
@@ -133,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // INPUT PASSWORD
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true, // Biar bintang-bintang *****
+                  obscureText: true,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
@@ -150,17 +179,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return "Password wajib diisi";
+                    if (value.length < 6) return "Password minimal 6 karakter";
                     return null;
                   },
                 ),
                 const SizedBox(height: 40),
 
-                // TOMBOL LOGIN
+                // TOMBOL REGISTER
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _login, // Kalau loading, tombol mati
+                    onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.purpleAccent,
                       shape: RoundedRectangleBorder(
@@ -170,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
-                            "Login",
+                            "Daftar Sekarang",
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -178,32 +208,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   ),
                 ),
-                
-                // --- BAGIAN BARU: NAVIGASI KE REGISTER ---
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Belum punya akun? ", style: TextStyle(color: Colors.grey)),
-                    GestureDetector(
-                      onTap: () {
-                        // Pindah ke halaman Register
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                        );
-                      },
-                      child: const Text(
-                        "Daftar",
-                        style: TextStyle(
-                          color: Colors.purpleAccent,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                // -----------------------------------------
               ],
             ),
           ),
