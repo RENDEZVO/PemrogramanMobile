@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:travelogue_app/models/Destination_models.dart';
+import 'package:travelogue_app/screens/checkout_screen.dart'; // Import halaman Checkout
 
 class DetailScreen extends StatelessWidget {
   final Destination destination;
@@ -208,9 +209,12 @@ class DetailScreen extends StatelessWidget {
             const Spacer(),
             ElevatedButton(
               onPressed: () {
-                // DISINI NANTI KITA SAMBUNG KE CHECKOUT
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Menuju halaman Checkout...")),
+                // --- NAVIGASI KE CHECKOUT ---
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckoutScreen(destination: destination),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
