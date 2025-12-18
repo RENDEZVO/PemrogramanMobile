@@ -3,14 +3,14 @@
 class Destination {
   final String imageUrl;
   final String name;
-  final String location;
+  final String capital; // <-- Kita ganti 'location' jadi 'capital' biar jelas
   final double rating;
   final String category; 
 
   Destination({
     required this.imageUrl,
     required this.name,
-    required this.location,
+    required this.capital, // <-- Update di constructor
     required this.rating,
     required this.category,
   });
@@ -22,21 +22,23 @@ class Destination {
     return Destination(
       name: json['name']?['common'] ?? 'Unknown Country',
       
-      location: (capitalList != null && capitalList.isNotEmpty) 
+      // Ambil ibukota dari list API
+      capital: (capitalList != null && capitalList.isNotEmpty) 
           ? capitalList.first as String 
           : 'No Capital',
       
       imageUrl: json['flags']?['png'] ?? '', 
-      rating: 4.5,
+      rating: 4.5, // Dummy rating
       category: json['region'] ?? 'Misc',
     );
   }
 }
 
+// Extension untuk Database SQLite
 extension DestinationDbExtension on Destination {
   Map<String, dynamic> toMap() => {
         'name': name,
-        'location': location,
+        'capital': capital, // <-- Simpan sebagai 'capital'
         'imageUrl': imageUrl,
         'rating': rating,
         'category': category,
@@ -45,7 +47,7 @@ extension DestinationDbExtension on Destination {
   static Destination fromDbMap(Map<String, dynamic> map) {
     return Destination(
       name: map['name'] as String,
-      location: map['location'] as String,
+      capital: map['capital'] as String, // <-- Baca sebagai 'capital'
       imageUrl: map['imageUrl'] as String,
       rating: map['rating'] as double,
       category: map['category'] as String,
