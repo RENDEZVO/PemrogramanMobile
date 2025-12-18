@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:travelogue_app/providers/app_providers.dart';
 import 'package:travelogue_app/screens/login_screen.dart'; // Import LoginScreen buat Logout
+import 'package:travelogue_app/screens/history_screen.dart'; // PENTING: Import History Screen
 
 class UserProfileDialog extends ConsumerStatefulWidget {
   const UserProfileDialog({super.key});
@@ -146,7 +147,31 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
 
             const SizedBox(height: 10),
 
-            // --- 3. TOMBOL LOGOUT ---
+            // --- 3. TOMBOL RIWAYAT PESANAN (BARU) ---
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context); // Tutup dialog dulu
+                  // Pindah ke halaman History
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HistoryScreen()),
+                  );
+                },
+                icon: const Icon(Icons.history, color: Colors.white),
+                label: const Text("Riwayat Pesanan", style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey[800], // Warna beda dikit biar spesial
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // --- 4. TOMBOL LOGOUT ---
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(

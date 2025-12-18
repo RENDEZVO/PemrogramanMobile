@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:travelogue_app/models/Destination_models.dart';
 import 'package:travelogue_app/screens/success_booking_screen.dart';
 
@@ -23,7 +24,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   // Harga Tetap (Dummy)
   final double _pricePerTicket = 5500000;
 
-  // Fungsi Format Rupiah Manual (Biar gak usah install library intl dulu)
+  // Fungsi Format Rupiah Manual
   String formatRupiah(double price) {
     return "IDR ${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}";
   }
@@ -94,6 +95,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       width: 80,
                       height: 80,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Container(color: Colors.grey, width: 80, height: 80),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -228,20 +231,52 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  // Simulasi Loading Bayar
+                // --- INI BAGIAN LOGIKA FIRESTORE NYA ---
+                onPressed: () async {
+                  // 1. Tampilkan Loading
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Memproses Pembayaran...")),
                   );
-                  
-                  Future.delayed(const Duration(seconds: 2), () {
+
+                  try {
+                    // 2. Siapkan Data Pesanan
+                    String bookingId = "BOOK-${DateTime.now().millisecondsSinceEpoch}";
+                    
+                    Map<String, dynamic> bookingData = {
+                      'booking_id': bookingId,
+                      'user_email': user?.email ?? "Guest",
+                      'user_name': user?.displayName ?? "Guest",
+                      'destination_name': widget.destination.name,
+                      'destination_capital': widget.destination.capital,
+                      'image_url': widget.destination.imageUrl,
+                      'booking_date': DateTime.now().toIso8601String(),
+                      'travel_date': _selectedDate.toIso8601String(),
+                      'ticket_count': _ticketCount,
+                      'total_price': totalPrice,
+                      'status': 'Paid',
+                    };
+
+                    // 3. KIRIM KE FIRESTORE
+                    await FirebaseFirestore.instance
+                        .collection('bookings')
+                        .doc(bookingId)
+                        .set(bookingData);
+
+                    // 4. Jika Sukses, Pindah ke Halaman Sukses
                     if (context.mounted) {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const SuccessBookingScreen()),
                       );
                     }
-                  });
+                  } catch (e) {
+                    // Kalau Error
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red),
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purpleAccent,
