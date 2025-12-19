@@ -1,44 +1,58 @@
-Travelogue: Aplikasi Panduan Wisata Global 🌍
-Aplikasi cross-platform yang dibangun dengan Flutter untuk menjelajahi destinasi dunia secara real-time, mengelola favorit, dan mempraktikkan arsitektur modern.
+Travelogue: Aplikasi Booking Wisata Internasional ✈️🌍
+Travelogue adalah aplikasi mobile cross-platform (Android/iOS) berbasis Flutter yang dirancang sebagai solusi end-to-end bagi wisatawan. Aplikasi ini mengintegrasikan data destinasi real-time, penyimpanan lokal (offline first), dan sistem manajemen pemesanan tiket berbasis cloud.
 
-Fitur Utama & Pencapaian Teknis ✨
-Proyek ini telah mengimplementasikan seluruh milestone pengembangan Flutter:
+✨ Fitur Utama & Pencapaian Teknis
+Aplikasi ini dibangun dengan arsitektur modern yang memisahkan Logic, UI, dan Data Service.
 
-🌐 Data & API Integration
-Akses Data Dinamis: Mengambil data negara (nama, ibu kota, dan bendera) dari REST Countries API menggunakan http dan FutureProvider.
+1. Integrasi Data & API (Live Data) 🌐
+REST Countries API Consumption: Mengambil data ratusan negara (Nama, Ibu Kota, Bendera, Region) secara live menggunakan package http.
 
-Form & Pencarian: Implementasi Form & Validation (di halaman Login) dan fitur pencarian menggunakan TextField yang reaktif dengan state Riverpod.
+Asynchronous Handling: Implementasi FutureProvider (Riverpod) untuk menangani status loading, error, dan data ready.
 
-🧠 Arsitektur & State Management
-Inti Reaktif: Menggunakan Riverpod (StateNotifierProvider, AsyncValue) untuk manajemen state yang terpusat dan reaktif.
+Smart Search: Fitur pencarian negara yang responsif.
 
-Penyimpanan Persisten:
+2. Hybrid Database System (SQL + NoSQL) 💾
+Aplikasi ini menerapkan dua jenis database untuk kebutuhan berbeda:
 
-Daftar Favorit disimpan ke SQLite (via sqflite).
+Local Database (SQLite): Digunakan untuk fitur Favorit. Memungkinkan user menyimpan destinasi impian dan mengaksesnya tanpa koneksi internet (offline mode).
 
-Pengaturan Tema (Light/Dark Mode) disimpan ke SharedPreferences.
+Cloud Database (Firestore): Digunakan untuk Transaction History. Data pemesanan tiket disimpan di server Google yang aman dan real-time.
 
-Model Data Aman: Memanfaatkan Null Safety dan factory fromJson yang aman untuk mengonversi data API.
+3. Booking System & E-Ticket 🎫
+Checkout Logic: Form pemesanan tiket dengan kalkulasi harga otomatis berdasarkan jumlah tiket.
 
-🖼️ User Interface (UI)
-Adaptif: Layout utama menggunakan ListView horizontal, dan hasil pencarian/favorit ditampilkan dalam GridView (SearchScreen, FavoriteScreen).
+QR Code Generator: Implementasi library qr_flutter untuk menghasilkan E-Ticket dengan QR Code unik berdasarkan Booking ID.
 
-Navigasi: Menggunakan Navigator.push dan Navigator.pushReplacement untuk alur Login-Home yang aman.
+Real-time History: Riwayat pesanan menggunakan StreamBuilder yang otomatis memperbarui tampilan jika ada perubahan data di server.
 
-Styling Dinamis: Implementasi tema terang dan gelap (ThemeData/darkTheme) yang dapat diubah dan disimpan pengguna.
+4. User Authentication & Profile 🔐
+Firebase Auth: Sistem Login, Register, dan Logout yang aman.
 
-Cara Menjalankan Proyek ⚙️
-Pastikan Anda sudah menginstall Flutter, Android Studio/VS Code, dan memiliki Android Emulator atau perangkat fisik.
-jalankan ini di terminal : git clone https://www.fda.gov/drugs/types-applications/abbreviated-new-drug-application-anda
-cd travelogue_app
+User Session: Menampilkan nama dan email pengguna yang sedang login secara dinamis.
 
-Install Dependencies:
-flutter pub get
+Dark/Light Mode: Preferensi tema yang disimpan persisten menggunakan SharedPreferences.
 
+Kategori,Teknologi/Library,Kegunaan
+Framework,Flutter (Dart),UI & Logic Development
+State Mgmt,Riverpod,Manajemen state aplikasi yang reaktif
+Auth,Firebase Auth,Autentikasi pengguna
+Backend DB,Cloud Firestore,Menyimpan data transaksi/booking
+Local DB,SQLite (sqflite),Menyimpan data favorit di HP
+Network,Http,Request ke REST API
+Utility,QR Flutter,Generate QR Code tiket
+Storage,Shared Preferences,Menyimpan setting Tema (Dark/Light)
 
-Jalankan Aplikasi: flutter run
-Pastikan emulator/perangkat tersambung.
+Fitur Fitur
+Home & API,Checkout & Booking,History & QR Code,Favorit (SQLite)
 
+📂 Struktur Folder (MVC Pattern)
+lib/models/: Blueprint data (JSON parsing & Database model).
 
+lib/providers/: Logika bisnis dan state management (Riverpod).
 
-Jalankan:
+lib/services/ & lib/helpers/: Komunikasi ke API dan Database SQLite.
+
+lib/screens/: Tampilan halaman (UI).
+
+lib/widgets/: Komponen UI yang dapat digunakan kembali.
+
